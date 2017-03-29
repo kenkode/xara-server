@@ -9,6 +9,8 @@
   use \App\Models\LoanTransaction;
   use \App\Models\User;
   use \App\Models\LoanGuarantor;
+  use \App\Models\DisbursementOption;
+  use \App\Models\LoanProduct;
   use \App\Models\SavingTransaction;
   use \App\Models\ShareTransaction;
 
@@ -260,6 +262,44 @@
 
   }
 
+  public function getApplicationDetails($request, $response) {
+    $data = [];
+
+    $disburseoptions = DisbursementOption::all();
+    $products = LoanProduct::all();
+
+    $data['disburseoptions'] = $disburseoptions;
+    $data['products'] = $products;
+
+    echo json_encode($data);
+  }
+
+  // public function applyLoan($request, $response) {
+  // 		$data = $request->getParams();
+  // 		$appliedamount= array_get($data, 'amount_applied');
+  // 		$disburseoption=array_get($data, 'disbursement_id');
+  // 		$opted=Disbursementoption::where('id','=',$disburseoption)->pluck('max');
+  // 		switch ($opted) {
+  // 			case $opted<$appliedamount:
+  // 				 return Redirect::back()->withGlare('The amount applied is more than the maximum amount that can be disbursed by the selected disbursement option!');
+  // 				break;
+  // 			case $opted>$appliedamount:
+  //
+  // 					$validator = Validator::make($data = Input::all(), Loanaccount::$rules);
+  //
+  // 					if ($validator->fails())
+  // 					{
+  // 						return Redirect::back()->withErrors($validator)->withInput();
+  // 					}
+  //
+  // 					Loanaccount::submitApplication($data);
+  //
+  // 					$id = array_get($data, 'member_id');
+  //
+  // 					return Redirect::to('loans');
+  // 				break;
+  // 			}
+  // 	}
 
 }
 

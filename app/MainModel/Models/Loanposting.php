@@ -24,7 +24,7 @@ class Loanposting extends \Eloquent {
 		$loanproduct = Loanproduct::findorfail($loan_id);
 
 
-		
+
 
 		$posting = new Loanposting;
 
@@ -34,7 +34,7 @@ class Loanposting extends \Eloquent {
 		$posting->principal_repayment($loanproduct, $data);
 
 		$posting->interest_repayment($loanproduct, $data);
-	
+
 		$posting->loan_write_off($loanproduct, $data);
 
 		$posting->fee_payment($loanproduct, $data);
@@ -42,9 +42,9 @@ class Loanposting extends \Eloquent {
 		$posting->penalty_payment($loanproduct, $data);
 
 		$posting->loan_overpayment($loanproduct, $data);
-		
+
 		$posting->overpayment_refund($loanproduct, $data);
-		
+
 
 	}
 
@@ -63,9 +63,6 @@ class Loanposting extends \Eloquent {
 		$posting->save();
 
 	}
-
-
-
 
 	public function principal_repayment($loanproduct, $data){
 
@@ -185,17 +182,17 @@ class Loanposting extends \Eloquent {
 		$posting = DB::table('loanpostings')->where('loanproduct_id', '=', $loanproduct->id)->where('transaction', '=', $transaction)->get();
 
 		foreach ($posting as $posting) {
-			
+
 			$credit_account = $posting->credit_account;
 			$debit_account = $posting->debit_account;
 		}
-		
+
 
 		$accounts = array('debit'=>$debit_account, 'credit'=>$credit_account);
 
 		return $accounts;
-				
-			
+
+
 	}
 
 
