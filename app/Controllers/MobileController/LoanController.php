@@ -31,7 +31,7 @@
       if(trim($username) == "Oirere" && trim($password) == "460888") {
         $data['status'] = true;
         $data['user'] = array(
-          "user_id"=>"1",
+          "user_id"=>"9",
           "user_name"=>"Oirere",
           "group_id"=>"1",
           "user_email"=>"eddiebranth@gmail.com",
@@ -230,6 +230,21 @@
     );
 
     $guarantors = LoanGuarantor::join("x_members", "x_members.id", "x_loanguarantors.id")
+                              ->where($data)->get();
+
+    echo json_encode($guarantors);
+  }
+
+  public function getGuarantors($request, $response) {
+    $member_id = $request->getParam("member_id");
+    $group_id = $request->getParam("group_id");
+
+    $data = array(
+      "group_id" => $group_id,
+      "member_id" => $member_id
+    );
+
+    $guarantors = Member::join("x_", "x_members.id", "x_loanguarantors.id")
                               ->where($data)->get();
 
     echo json_encode($guarantors);
