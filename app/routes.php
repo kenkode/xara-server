@@ -12,5 +12,7 @@ $app->get("/loans", "LoanController:getLoans");
 
 $app->post("/loan", "LoanController:getLoan");
 
+$app->get("/appliedloans", "LoanController:getAppliedLoans");
+
 
  ?>

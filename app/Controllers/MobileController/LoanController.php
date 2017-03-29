@@ -32,6 +32,7 @@
         $data['user'] = array(
           "user_id"=>"1",
           "user_name"=>"Oirere",
+          "group_id"=>"1",
           "user_email"=>"eddiebranth@gmail.com",
           "user_type"=>"admin",
           "user_phone"=>"0700460888"
@@ -102,16 +103,20 @@
       if($user->user_type=='credit'){
         $loanaccounts=Loanaccount::where("x_loanaccounts.member_id", $user_id)
         ->join("x_loanproducts", "loanproduct_id", "x_loanproducts.id")
+        ->join("x_members", "x_loanaccounts.member_id", "x_members.id")
         ->where('is_rejected',0)
         ->where('secretary_approved',0)
-        ->select("x_loanaccounts.id", "is_approved", "x_loanproducts.interest_rate", "name",
-         "amount_disbursed", "repayment_duration", "top_up_amount", "currency", "application_date", "repayment_start_date")
+        ->select("x_loanaccounts.id", "is_approved", "x_loanproducts.interest_rate", "x_loanproducts.name as loan_name",
+        "x_members.name as user_name", "amount_disbursed", "repayment_duration", "top_up_amount", "currency",
+        "application_date", "repayment_start_date", "x_members.id as user_id", "phone", "group_id", "email")
         ->get();
       }else if($user->user_type=='admin'){
         $loanaccounts = Loanaccount::where("x_loanaccounts.member_id", $user_id)
         ->join("x_loanproducts", "x_loanproducts.id", "loanproduct_id")
-        ->select("x_loanaccounts.id", "is_approved", "x_loanproducts.interest_rate", "name", "amount_disbursed",
-        "repayment_duration", "top_up_amount", "currency", "application_date", "repayment_start_date")
+        ->join("x_members", "x_loanaccounts.member_id", "x_members.id")
+        ->select("x_loanaccounts.id", "is_approved", "x_loanproducts.interest_rate", "x_loanproducts.name as loan_name",
+        "x_members.name as user_name", "amount_disbursed", "repayment_duration", "top_up_amount", "currency",
+        "application_date", "repayment_start_date", "x_members.id as user_id", "phone", "group_id", "email")
         ->get();
       }
     }else {
@@ -198,6 +203,21 @@
 		}
 		return $interest_amount;
 	}
+
+  public function getAppliedLoans($request, $response) {
+      $group_id = 1;
+      $appliedLoans = Loanaccount::join("x_members", "x_loanaccounts.member_id", "x_members.id")
+                            ->join("x_loanproducts", "x_loanproducts.id", "x_loanaccounts.loanproduct_id")
+                            ->where("x_members.group_id", $group_id)
+                            ->where("x_members.id", 9)
+                            ->select("x_loanaccounts.id", "is_approved", "x_loanproducts.interest_rate", "x_loanproducts.name as loan_name",
+                            "x_members.name as user_name", "amount_disbursed", "repayment_duration", "top_up_amount", "currency",
+                            "application_date", "repayment_start_date", "x_members.id as user_id", "phone", "group_id", "email")
+                            ->get();
+
+      echo json_encode($appliedLoans);
+
+  }
 
 
 }
