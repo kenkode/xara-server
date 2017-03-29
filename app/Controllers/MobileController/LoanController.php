@@ -8,6 +8,7 @@
   use \App\Models\Member;
   use \App\Models\LoanTransaction;
   use \App\Models\User;
+  use \App\Models\LoanGuarantor;
   use \App\Models\SavingTransaction;
   use \App\Models\ShareTransaction;
 
@@ -216,6 +217,31 @@
                             ->get();
 
       echo json_encode($appliedLoans);
+
+  }
+
+  public function getLoanGuarantors($request, $response) {
+    $loanaccount = $request->getParam("loanaccount_id");
+    $member_id = $request->getParam("member_id");
+
+    $data = array(
+      "loanaccount_id" => $loanaccount,
+      "member_id" => $member_id
+    );
+
+    $guarantors = LoanGuarantor::join("x_members", "x_members.id", "x_loanguarantors.id")
+                              ->where($data)->get();
+
+    echo json_encode($guarantors);
+  }
+
+  public function getAccounts($request, $response) {
+    $group_id = $request->getParam("group_id");
+    $member = $request->getParam("member");
+
+    $accounts = Member::where("group_id", $group_id)->whereNotIn("id", [$member])->get();
+
+    echo json_encode($accounts);
 
   }
 

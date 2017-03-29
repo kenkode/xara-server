@@ -14,5 +14,9 @@ $app->post("/loan", "LoanController:getLoan");
 
 $app->get("/appliedloans", "LoanController:getAppliedLoans");
 
+$app->post("/guarantors", "LoanController:getLoanGuarantors");
+
+$app->post("/accounts", "LoanController:getAccounts");
+
 
  ?>
