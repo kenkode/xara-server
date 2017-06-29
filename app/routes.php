@@ -20,5 +20,5 @@ $app->post("/accounts", "LoanController:getAccounts");
 
 $app->get("/applicationdetails", "LoanController:getApplicationDetails");
 
-
+Route::post('users/login', 'UsersController@doLogin');
  ?>

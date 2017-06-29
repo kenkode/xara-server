@@ -274,6 +274,29 @@
     echo json_encode($data);
   }
 
+  public function loginUser($request, $response) {
+    $repo = App::make('UserRepository');
+        $input = Input::all();
+
+        if ($repo->login($input)) {
+            echo "sucess";
+            $users = User::all();
+            echo json_encode($users);
+        } else {
+            if ($repo->isThrottled($input)) {
+                $err_msg = Lang::get('confide::confide.alerts.too_many_attempts');
+            } elseif ($repo->existsButNotConfirmed($input)) {
+                $err_msg = Lang::get('confide::confide.alerts.not_confirmed');
+            } else {
+                $err_msg = Lang::get('confide::confide.alerts.wrong_credentials');
+            }
+
+            return Redirect::action('UsersController@login')
+                ->withInput(Input::except('password'))
+                ->with('error', $err_msg);
+        }
+  }
+
   // public function applyLoan($request, $response) {
   // 		$data = $request->getParams();
   // 		$appliedamount= array_get($data, 'amount_applied');
