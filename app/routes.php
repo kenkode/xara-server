@@ -20,5 +20,14 @@ $app->post("/accounts", "LoanController:getAccounts");
 
 $app->get("/applicationdetails", "LoanController:getApplicationDetails");
 
-Route::post('users/login', 'UsersController@doLogin');
+//$app->post('/users/login', 'LoanController:loginUser');
+
+ $app->post('/users/login', function($request, $response, $args){ $username = $request->getParam('username'); $password = $request->getParam('password'); 
+
+   $user = App\Models\User::where('username',$username)->orWhere('email',$username)->first();
+   if(password_verify ( $password , $user->password ) == true){
+   echo json_encode($user);
+   }
+   //return  $user->password ;
+  });
  ?>
