@@ -25,21 +25,25 @@
         $this->controller = $controller;
     }
 
-    public function authenticateUser($request, $response) {
+    public function authenticateUser($request, $response, $args) {
       $data;
       $username = $request->getParam("username");
       $password = $request->getParam("password");
 
-      if(trim($username) == "Oirere" && trim($password) == "460888") {
-        $data['status'] = true;
-        $data['user'] = array(
+      if(trim($username) && trim($password)) {
+       $data['status'] = true;
+       $user = User::where('username',$username)->orWhere('email',$username)->first();
+       if(password_verify ( $password , $user->password ) == true){
+         $data['user'] = $user;
+       }
+        /*$data['user'] = array(
           "user_id"=>"9",
           "user_name"=>"Oirere",
           "group_id"=>"1",
           "user_email"=>"eddiebranth@gmail.com",
           "user_type"=>"admin",
           "user_phone"=>"0700460888"
-        );
+        );*/
       }else {
         $data['status'] = false;
         $data['exist'] = 0;
@@ -48,13 +52,16 @@
       echo json_encode($data);
     }
 
-  public function getTotalLoansAndSavings($request, $response)
+  public function getTotalLoansAndSavings($request, $response, $args)
   {
       $data;
-      // $id = $request->getParam("xm_user_key");
-      $id = 66;
+      $mno = $request->getParam("memberno");
+      
+      $member = Member::where('membership_no',$mno)->first();
 
-      $transaction = Loanaccount::findOrFail($id);
+      //$id = 66;
+
+      $transaction = Loanaccount::where('member_id',$member->id)->first();
   // echo "in loan";die;
       $saving   = SavingTransaction::join('x_savingaccounts','x_savingtransactions.savingaccount_id','=','x_savingaccounts.id')
                           ->where('member_id',$transaction->member_id)
@@ -274,10 +281,14 @@
     echo json_encode($data);
   }
 
-  public function loginUser($request, $response) {
-   $user = User::where('username',$request->username)->where('email',$request->username)->first();
-   return  $user->password ;
+  public function loginUser($request, $response, $args) {
+   $username = $request->getParam('username'); 
+   $password = $request->getParam('password'); 
 
+   $user = User::where('username',$username)->orWhere('email',$username)->first();
+   if(password_verify ( $password , $user->password ) == true){
+   echo json_encode($user);
+   }
   }
 
   // public function applyLoan($request, $response) {
