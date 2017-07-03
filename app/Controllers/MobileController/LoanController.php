@@ -13,6 +13,7 @@
   use \App\Models\LoanProduct;
   use \App\Models\SavingTransaction;
   use \App\Models\ShareTransaction;
+  use Illuminate\Database\Capsule\Manager as DB;
 
   /**
    *  Controller for mobile xara application
@@ -56,50 +57,105 @@
   {
       $data;
       $mno = $request->getParam("memberno");
-      
-      $member = Member::where('membership_no',$mno)->first();
+      $type = $request->getParam("type");
+
+      if($type == "admin"){
+      $members = Member::all();
 
       //$id = 66;
-
       $transaction = Loanaccount::where('member_id',$member->id)->first();
+     
   // echo "in loan";die;
-      $saving   = SavingTransaction::join('x_savingaccounts','x_savingtransactions.savingaccount_id','=','x_savingaccounts.id')
-                          ->where('member_id',$transaction->member_id)
+
+      $savings   = SavingTransaction::join('x_savingaccounts','x_savingtransactions.savingaccount_id','=','x_savingaccounts.id')
                           ->where('x_savingtransactions.type','credit')
                           ->sum('amount');
-
+     
       $shares   = ShareTransaction::join('x_shareaccounts','x_sharetransactions.shareaccount_id','=','x_shareaccounts.id')
-                          ->where('member_id',$transaction->member_id)
                           ->where('x_sharetransactions.type','credit')
                           ->sum('amount');
+      
+      $remittance   = Member::sum('monthly_remittance_amount');
 
-      $remittance   = Member::where('x_members.id',$transaction->member_id)
-                          ->sum('monthly_remittance_amount');
+      $amount_to_date   = $savings + $remittance+$shares;
 
-      $amount_to_date   = $saving + $remittance+$shares;
-
+     
       $principal_paid   = LoanRepayment::join('x_loanaccounts','x_loanrepayments.loanaccount_id','=','x_loanaccounts.id')
-                          ->where('member_id',$transaction->member_id)
                           ->sum('principal_paid');
+      
 
-      $amount_disbursed   = Loanaccount::where('member_id',$transaction->member_id)
-                          ->sum('amount_disbursed');
+      $amount_disbursed   = Loanaccount::sum('amount_disbursed');
 
-      $top_up = Loanaccount::where('member_id',$transaction->member_id)
-                          ->sum('top_up_amount');
+      $top_up = Loanaccount::sum('top_up_amount');
 
       $balance_to_date = $amount_disbursed + $top_up - $principal_paid;
 
       // Transactions
       $transactions = Loantransaction::join('x_loanaccounts','x_loantransactions.loanaccount_id','=','x_loanaccounts.id')
-            ->where('member_id',$transaction->member_id)
-            ->select('x_loantransactions.created_at', 'amount', 'type', 'description', 'amount', 'trans_no')
+            ->join('x_members','x_loanaccounts.member_id','=','x_members.id')
+            ->select('x_loantransactions.created_at', 'amount', 'name','membership_no','type', 'description', 'amount', 'trans_no')
             ->latest()->take(10)->get();
 
       $data['savings'] = $amount_to_date;
       $data['loans'] = $balance_to_date;
       $data['transactions'] = $transactions;
+      }else{
+      
+      $member = Member::where('membership_no',$mno)->first();
 
+      //echo json_encode($request->getParam("memberno"));
+      //$id = 66;
+      //exit();
+      
+      $transaction = Loanaccount::where('member_id',$member->id)->first();
+      // echo "in loan";die;
+      $saving   = SavingTransaction::join('x_savingaccounts','x_savingtransactions.savingaccount_id','=','x_savingaccounts.id')
+                          ->where('member_id',$member->id)
+                          ->where('x_savingtransactions.type','credit')
+                          ->select(DB::raw("COALESCE(sum(amount),0.00) as amount"))
+                          ->first();
+
+      //echo json_encode($saving->amount);
+
+      $shares   = ShareTransaction::join('x_shareaccounts','x_sharetransactions.shareaccount_id','=','x_shareaccounts.id')
+                          ->where('member_id',$member->id)
+                          ->where('x_sharetransactions.type','credit')
+                          ->select(DB::raw("COALESCE(sum(amount),0.00) as amount"))
+                          ->first();
+
+      $remittance   = Member::where('x_members.id',$member->id)
+                          ->sum('monthly_remittance_amount');
+
+      $amount_to_date   = $saving->amount + $remittance + $shares->amount;
+
+      $principal_paid   = LoanRepayment::join('x_loanaccounts','x_loanrepayments.loanaccount_id','=','x_loanaccounts.id')
+                          ->where('member_id',$member->id)
+                          ->select(DB::raw("COALESCE(sum(principal_paid),0.00) as amount"))
+                          ->first();
+
+      $amount_disbursed   = Loanaccount::where('member_id',$member->id)
+                          ->select(DB::raw("COALESCE(sum(amount_disbursed),0.00) as amount"))
+                          ->first();
+
+      $top_up = Loanaccount::where('member_id',$member->id)
+                          ->select(DB::raw("COALESCE(sum(amount_disbursed),0.00) as amount"))
+                          ->first();
+
+      $balance_to_date = $amount_disbursed->amount + $top_up->amount - $principal_paid->amount;
+
+      // Transactions
+      $transactions = Loantransaction::join('x_loanaccounts','x_loantransactions.loanaccount_id','=','x_loanaccounts.id')
+            ->join('x_members','x_loanaccounts.member_id','=','x_members.id')
+            ->where('member_id',$member->id)
+            ->select('x_loantransactions.created_at', 'amount', 'type','membership_no','name', 'description', 'amount', 'trans_no')
+            ->latest()->take(10)->get();
+
+      $data['savings'] = $amount_to_date;
+      $data['loans'] = $balance_to_date;
+      $data['transactions'] = $transactions;
+      }
+
+      
       echo json_encode($data);
 
   }

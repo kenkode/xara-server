@@ -6,7 +6,7 @@ use App\Models\TestM;
 
 $app->post("/", "LoanController:authenticateUser");
 
-$app->get("/totalloansandsavings", "LoanController:getTotalLoansAndSavings");
+//$app->get("/totalloansandsavings", "LoanController:getTotalLoansAndSavings");
 
 $app->post("/totalloansandsavings", "LoanController:getTotalLoansAndSavings");
 
