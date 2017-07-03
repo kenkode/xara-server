@@ -63,7 +63,9 @@
       $members = Member::all();
 
       //$id = 66;
-      $transaction = Loanaccount::where('member_id',$member->id)->first();
+
+
+      //$transaction = Loanaccount::where('member_id',$member->id)->first();
      
   // echo "in loan";die;
 
